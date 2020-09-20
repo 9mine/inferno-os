@@ -47,6 +47,7 @@ init(nil: ref Draw->Context, args: list of string)
 
 	# get password
 	id := hd args;
+	args = tl args;
 	(dbdir, secret, expiry, err) := getuser(id);
 	if(dbdir == nil){
 		if(err != nil){
@@ -55,30 +56,15 @@ init(nil: ref Draw->Context, args: list of string)
 		}
 		sys->print("new account\n");
 	}
-	for(;;){
-		if(secret != nil)
-			sys->print("secret [default = don't change]: ");
-		else
-			sys->print("secret: ");
-		(ok, word) = readline(stdin, "rawon");
-		if(!ok)
-			exit;
-		if(word == "" && secret != nil)
-			break;
-		if(len word >= 8)
-			break;
+
+	word = hd args;
+	if(len word < 8) {
 		sys->print("!secret must be at least 8 characters\n");
-	}
+		exit;
+	} 
+
 	newsecret: array of byte;
 	if(word != ""){
-		# confirm password change
-		word1 := word;
-		sys->print("confirm: ");
-		(ok, word) = readline(stdin, "rawon");
-		if(!ok || word != word1) {
-			sys->print("Entries do not match. Authinfo record unchanged.\n"); 
-			raise "fail:mismatch";
-		}
 
 		pwbuf := array of byte word;
 		newsecret = array[Keyring->SHA1dlen] of byte;
@@ -86,63 +72,7 @@ init(nil: ref Draw->Context, args: list of string)
 	}
 
 	# get expiration time (midnight of date specified)
-	maxdate := "17012038";			# largest date possible without incurring integer overflow
-	now := daytime->now();
-	tm := daytime->local(now);
-	tm.sec = 59;
-	tm.min = 59;
-	tm.hour = 23;
-	tm.year += 1;
-	if(dbdir == nil)
-		expsecs := daytime->tm2epoch(tm);	# set expiration date to 23:59:59 one year from today
-	else
-		expsecs = expiry;
-	for(;;){
-		defexpdate := "permanent";
-		if(expsecs != 0) {
-			otm := daytime->local(expsecs);
-			defexpdate = sys->sprint("%2.2d%2.2d%4.4d", otm.mday, otm.mon+1, otm.year+1900);
-		}
-		sys->print("expires [DDMMYYYY/permanent, return = %s]: ", defexpdate);
-		(ok, word) = readline(stdin, "rawoff");
-		if(!ok)
-			exit;
-		if(word == "")
-			word = defexpdate;
-		if(word == "permanent"){
-			expsecs = 0;
-			break;
-		}
-		if(len word != 8){
-			sys->print("!bad date format %s\n", word);
-			continue;
-		}
-		tm.mday = int word[0:2];
-		if(tm.mday > 31 || tm.mday < 1){
-			sys->print("!bad day of month %d\n", tm.mday);
-			continue;
-		}
-		tm.mon = int word[2:4] - 1;
-		if(tm.mon > 11 || tm.mday < 0){
-			sys->print("!bad month %d\n", tm.mon + 1);
-			continue;
-		}
-		tm.year = int word[4:8] - 1900;
-		if(tm.year < 70){
-			sys->print("!bad year %d (year may be no earlier than 1970)\n", tm.year + 1900);
-			continue;
-		}
-		expsecs = daytime->tm2epoch(tm);
-		if(expsecs > now)
-			break;
-		else {
-			newexpdate := sys->sprint("%2.2d%2.2d%4.4d", tm.mday, tm.mon+1, tm.year+1900);
-			tm          = daytime->local(daytime->now());
-			today      := sys->sprint("%2.2d%2.2d%4.4d", tm.mday, tm.mon+1, tm.year+1900);
-			sys->print("!bad expiration date %s (must be between %s and %s)\n", newexpdate, today, maxdate);
-			expsecs = now;
-		}
-	}
+	expsecs := expiry;
 	newexpiry := expsecs;
 
 #	# get the free form field
