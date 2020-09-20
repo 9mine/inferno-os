@@ -1,6 +1,7 @@
 name: Inferno Container
 on:
   push
+
 jobs:
   build:
     runs-on: ubuntu-latest
