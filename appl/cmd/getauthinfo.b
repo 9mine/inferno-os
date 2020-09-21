@@ -66,9 +66,6 @@ init(nil: ref Draw->Context, argv: list of string)
 	if(path[0] != '/' && (len path < 2 || path[0:2] != "./"))
 		path = "/usr/" + user + "/keyring/" + keyname;
 
-	sys->fprint(stderr, "HACK\n");
-
-
 	signer := defaultsigner();
 	if(signer == nil){
 		sys->fprint(stderr, "getauthinfo: warning: can't get default signer server name\n");
@@ -127,7 +124,6 @@ logon(user, passwd, server, path, save: string): ref Keyring->Authinfo
 		return nil;
 	}
 
-	sys->fprint(stderr, "auth done\n");
 	return info;
 }
 
