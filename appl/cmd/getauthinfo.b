@@ -19,7 +19,7 @@ include "security.m";
 include "string.m";
 	str: String;
 
-include "promptstring.b";
+#include "promptstring.b";
 
 Getauthinfo: module
 {
@@ -28,7 +28,7 @@ Getauthinfo: module
 
 usage()
 {
-	sys->fprint(stderr, "usage: getauthinfo {net!hostname | default | /file}\n");
+	sys->fprint(stderr, "usage: getauthinfo {net!hostname | default | /file} {signer_addr} {username} {password}\n");
 	raise "fail:usage";
 }
 
@@ -40,7 +40,7 @@ init(nil: ref Draw->Context, argv: list of string)
 	stderr = sys->fildes(2);
 
 	# Disable echoing in RAWON mode
-	RAWON_STR = nil;
+	# RAWON_STR = nil;
 
 	argv = tl argv;
 	if(argv == nil)
@@ -66,6 +66,9 @@ init(nil: ref Draw->Context, argv: list of string)
 	if(path[0] != '/' && (len path < 2 || path[0:2] != "./"))
 		path = "/usr/" + user + "/keyring/" + keyname;
 
+	sys->fprint(stderr, "HACK\n");
+
+
 	signer := defaultsigner();
 	if(signer == nil){
 		sys->fprint(stderr, "getauthinfo: warning: can't get default signer server name\n");
@@ -74,15 +77,24 @@ init(nil: ref Draw->Context, argv: list of string)
 
 	passwd := "";
 	save := "yes";
-	for(;;) {
-		signer = promptstring("use signer", signer, RAWOFF);
-		user = promptstring("remote user name", user, RAWOFF);
-		passwd = promptstring("password", passwd, RAWON);
 
-		info := logon(user, passwd, signer, path, save);
-		if(info != nil)
-			break;
+	argv = tl argv;
+	signer = hd argv; argv = tl argv;
+	user = hd argv; argv = tl argv;
+	passwd = hd argv; argv = tl argv;
+
+	sys->fprint(stdout, "Connect to %s server under %s/%s\n", signer, user, passwd);
+
+	info := logon(user, passwd, signer, path, save);
+
+	if(info == nil) {
+		sys->fprint(stderr, "Auth fail\n");
+		raise "fail:auth";
+        }
+	else {
+		sys->fprint(stderr, "Auth ok\n");
 	}
+               
 }
 
 logon(user, passwd, server, path, save: string): ref Keyring->Authinfo
@@ -94,8 +106,7 @@ logon(user, passwd, server, path, save: string): ref Keyring->Authinfo
 	}
 
 	# save the info somewhere for later access
-	save = promptstring("save in file", save, RAWOFF);
-	if(save[0] != 'y'){
+	if(1){
 		(dir, file) := str->splitr(path, "/");
 		if(sys->bind("#s", dir, Sys->MBEFORE) < 0){
 			sys->fprint(stderr, "getauthinfo: can't bind file channel on %s: %r\n", dir);
@@ -116,6 +127,7 @@ logon(user, passwd, server, path, save: string): ref Keyring->Authinfo
 		return nil;
 	}
 
+	sys->fprint(stderr, "auth done\n");
 	return info;
 }
 
