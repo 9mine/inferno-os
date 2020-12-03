@@ -23,7 +23,7 @@ RUN export PATH=$PATH:/usr/inferno-os/Linux/386/bin &&\
 FROM ubuntu:focal
 
 RUN apt-get update && apt-get install -y \
-  libc6-dev-i386    
+  libc6-dev-i386 net-tools
 ENV ROOT_DIR /usr/inferno-os
 COPY --from=builder ${ROOT_DIR}/Linux/386/bin/emu-g /usr/bin
 COPY --from=builder ${ROOT_DIR}/dis $ROOT_DIR/dis
