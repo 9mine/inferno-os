@@ -147,7 +147,7 @@ listen1(drawctxt: ref Draw->Context, addr: string, argv: list of string,
 {
 	sys->pctl(Sys->FORKFD, nil);
 	if(regattrs != nil){
-		sys->pctl(Sys->FORKNS, nil);
+		# sys->pctl(Sys->FORKNS, nil);
 		registry := Registry.new("/mnt/registry");
 		if(registry == nil)
 			registry = Registry.connect(nil, nil, nil);
