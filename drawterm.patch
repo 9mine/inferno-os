@@ -1,0 +1,98 @@
+diff --git a/Make.headless b/Make.headless
+new file mode 100644
+--- /dev/null
++++ b/Make.headless
+@@ -0,0 +1,21 @@
++# Headless
++PTHREAD=-pthread
++AR=ar
++AS=as
++RANLIB=ranlib
++CC=gcc
++CFLAGS=-Wall -Wno-missing-braces -ggdb -I$(ROOT) -I$(ROOT)/include -I$(ROOT)/kern -c -D_THREAD_SAFE $(PTHREAD) -O2
++O=o
++OS=posix
++GUI=none
++LDADD=-ggdb -lm
++LDFLAGS=$(PTHREAD)
++TARG=drawterm
++AUDIO=none
++# AUDIO=unix
++
++all: default
++
++libmachdep.a:
++	arch=`uname -m|sed 's/i.86/386/;s/Power Macintosh/power/; s/x86_64/amd64/; s/armv[567].*/arm/; s/aarch64/arm64/'`; \
++	(cd posix-$$arch &&  make)
+diff --git a/README b/README
+--- a/README
++++ b/README
+@@ -18,6 +18,8 @@
+ 
+ To build on Mac OS X with Cocoa, run CONF=osx-cocoa make and "cp drawterm gui-cocoa/drawterm.app/".
+ 
++To build without a GUI, run CONF=headless make.
++
+ 
+ BINARIES
+ ---------
+diff --git a/gui-none/Makefile b/gui-none/Makefile
+new file mode 100644
+--- /dev/null
++++ b/gui-none/Makefile
+@@ -0,0 +1,11 @@
++ROOT=..
++include ../Make.config
++LIB=libgui.a
++
++OFILES=\
++ stub.$O\
++
++default: $(LIB)
++$(LIB): $(OFILES)
++	$(AR) r $(LIB) $(OFILES)
++	$(RANLIB) $(LIB)
+diff --git a/gui-none/stub.c b/gui-none/stub.c
+new file mode 100644
+--- /dev/null
++++ b/gui-none/stub.c
+@@ -0,0 +1,38 @@
++#include "u.h"
++#include "lib.h"
++#include "dat.h"
++#include "fns.h"
++
++#include <draw.h>
++#include <memdraw.h>
++#include "screen.h"
++
++void
++yell(void)
++{
++ fprint(2, "No GUI on headless build; use drawterm -G instead\n");
++ exit(1);
++}
++
++Memimage *gscreen;
++
++void screeninit(void) { yell(); }
++void screenload(Rectangle a, int b, uchar *c, Point d, int e) { yell(); }
++
++void getcolor(ulong a, ulong* b, ulong* c, ulong* d) { yell(); }
++void setcolor(ulong a, ulong b, ulong c, ulong d) { yell(); }
++
++void setcursor(void) { yell(); }
++void mouseset(Point a) { yell(); }
++void flushmemscreen(Rectangle a) { yell(); }
++Memdata* attachscreen(Rectangle* a, ulong* b, int* c, int* d, int* e) { yell(); return nil; }
++
++void terminit(void) { yell(); }
++void screenresize(Rectangle a) { yell(); }
++void screensize(Rectangle a, ulong b) { yell(); }
++
++void guimain(void) { yell(); }
++
++char* clipread(void) { yell(); return nil; }
++int clipwrite(char *a) { yell(); return 0; }
++
+
