@@ -1,3 +1,13 @@
+FROM ubuntu:focal AS drawterm-builder
+RUN apt-get update && apt-get install -y build-essential binutils curl
+RUN mkdir /usr/drawterm
+WORKDIR /usr
+RUN curl https://code.9front.org/hg/drawterm/archive/9807ebf9d580.tar.bz2 | tar jxvf - -C drawterm --strip 1
+WORKDIR /usr/drawterm
+ADD ./drawterm.patch /usr/drawterm/
+RUN patch -p1 < drawterm.patch
+RUN CONF=headless make
+
 FROM ubuntu:focal AS builder
 WORKDIR /usr
 ENV DEBIAN_FRONTEND noninteractive
@@ -31,6 +41,7 @@ COPY --from=builder ${ROOT_DIR}/appl $ROOT_DIR/appl
 COPY --from=builder ${ROOT_DIR}/lib $ROOT_DIR/lib
 COPY --from=builder ${ROOT_DIR}/module $ROOT_DIR/module
 COPY --from=builder ${ROOT_DIR}/usr $ROOT_DIR/usr
+COPY --from=drawterm-builder /usr/drawterm/drawterm /usr/bin
 
 
 ENTRYPOINT ["emu-g"]
