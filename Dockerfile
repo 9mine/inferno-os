@@ -41,6 +41,7 @@ COPY --from=builder ${ROOT_DIR}/appl $ROOT_DIR/appl
 COPY --from=builder ${ROOT_DIR}/lib $ROOT_DIR/lib
 COPY --from=builder ${ROOT_DIR}/module $ROOT_DIR/module
 COPY --from=builder ${ROOT_DIR}/usr $ROOT_DIR/usr
+COPY --from=builder ${ROOT_DIR}/man $ROOT_DIR/man
 COPY --from=drawterm-builder /usr/drawterm/drawterm /usr/bin
 
 
