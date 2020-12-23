@@ -21,7 +21,7 @@ COPY --from=builder /usr/inferno-os/appl $ROOT_DIR/appl
 COPY --from=builder /usr/inferno-os/lib $ROOT_DIR/lib
 COPY --from=builder /usr/inferno-os/module $ROOT_DIR/module
 COPY --from=builder /usr/inferno-os/usr $ROOT_DIR/usr
-RUN apt-get update && apt-get upgrade -y && apt-get install -y traceroute 
+COPY --from=builder /usr/inferno-os/man $ROOT_DIR/man
 
 RUN mkdir /usr/inferno-os/keydb
 RUN mkdir -p /usr/inferno-os/mnt/keys
