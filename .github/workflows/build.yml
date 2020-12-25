@@ -1,24 +1,25 @@
-name: Inferno Container
+name: InfernoOS Container Image
 on:
   push
 
 jobs:
   build:
+    name: Build and Push Docker Image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       
       - name: Docker Layer Caching
-        uses: satackey/action-docker-layer-caching@v0.0.8
+        uses: satackey/action-docker-layer-caching@v0.0.11
 
-      - name: build image
-        run: docker build -t ${{ secrets.REGISTRY_USERNAME }}/inferno-os:${GITHUB_REF##*/} .
+      - name: Build Inferno OS Image
+        run: docker build -t ${{ secrets.REGISTRY_ORGANIZATION }}/inferno-os:${GITHUB_REF##*/} .
 
       - name: login to hub.docker.com
         run: docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }}
 
-      - name: push image to registry
-        run: docker image push ${{ secrets.REGISTRY_USERNAME }}/inferno-os:${GITHUB_REF##*/}
+      - name: Push Inferno OS Image to Registry
+        run: docker image push ${{ secrets.REGISTRY_ORGANIZATION }}/inferno-os:${GITHUB_REF##*/}
       
       - name: Notify Telegram
         uses: yanzay/notify-telegram@v0.1.0
